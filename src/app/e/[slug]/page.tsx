@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getSessionUserId } from "@/lib/auth";
 import { getEventBySlug } from "@/lib/events";
 import { EventLive } from "./event-live";
 
@@ -12,6 +14,8 @@ export default async function EventPage({
   const { slug } = await params;
   const event = await getEventBySlug(slug);
   if (!event) notFound();
+  const userId = await getSessionUserId();
+  const isCreator = userId === event.creatorId;
 
   const when = event.startsAt.toLocaleString(undefined, {
     weekday: "long",
@@ -31,6 +35,13 @@ export default async function EventPage({
         </p>
         {event.venueNotes && <p className="italic">“{event.venueNotes}”</p>}
       </div>
+      {isCreator && event.status === "open" && (
+        <p className="mt-2 text-sm">
+          <Link href={`/e/${slug}/manage`} className="underline underline-offset-2">
+            Manage your event
+          </Link>
+        </p>
+      )}
 
       <EventLive slug={slug} />
 

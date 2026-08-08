@@ -26,4 +26,20 @@ Decisions made autonomously while the user was AFK. Newest last.
    and no integration dependencies. Milestone *integration* still proceeds in order
    M1→M5 and each milestone's acceptance criteria are run before the next is wired up.
 6. **shadcn/ui**: Initialised with defaults (new-york style, neutral base). Components
-   added only as needed.
+   added only as needed. Current shadcn generates Base UI primitives (no `asChild`), so
+   link-buttons use `buttonVariants()` classes on `<Link>` directly.
+7. **Registration timing**: The plan says the gate decision must be shown *before*
+   payment details. Implemented as: the join page shows a gate *preview* (reserved vs
+   waitlist messaging), the card is saved via SetupIntent, and the registration row is
+   created in the gated transaction only *after* the card is saved. This avoids
+   abandoned card-less registrations holding slots; the rare race where the preview says
+   "reserved" but you land waitlisted is shown honestly on the confirmation screen.
+8. **Creator's card**: Creating an event registers the creator without a payment method
+   (the create form has no card step in the MVP). In real-Stripe mode the tipper treats
+   a missing payment method as a failed charge → fix-payment email, which doubles as the
+   creator's "add your card" path. In keyless dev mode charges are simulated.
+9. **Cancel window**: Self-serve cancellation is only allowed while the event is `open`
+   (pre-tip). After tip, money has moved — refund automation is explicitly out of scope.
+10. **Dev mode without Stripe keys**: join flow skips the card step entirely
+    (`mode:"dev"`), and charges are simulated with `dev_pi_*` ids so the whole lifecycle
+    is demoable locally. Real mode requires keys and is the production path.
