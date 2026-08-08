@@ -19,7 +19,7 @@ export default async function ManagePage({
   if (event.status !== "open") redirect(`/e/${slug}`);
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-8">
+    <main className="mx-auto w-full max-w-xl px-4 py-8 sm:px-6">
       <h1 className="text-2xl font-semibold">Manage event</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         You can edit details, extend the deadline once, or cancel — but only until it tips.

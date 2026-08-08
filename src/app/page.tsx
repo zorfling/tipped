@@ -4,7 +4,6 @@ import { getSessionUser } from "@/lib/auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Wordmark } from "@/components/wordmark";
-import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +16,8 @@ export default async function Home({
   const [openEvents, user] = await Promise.all([getOpenEvents(city), getSessionUser()]);
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 pb-12 pt-8">
-      <nav className="mb-10 flex items-center justify-between">
+    <main className="mx-auto w-full max-w-5xl px-4 pb-16 pt-8 sm:px-6">
+      <nav className="mb-12 flex items-center justify-between">
         <Wordmark className="text-2xl" />
         <Link
           href={user ? "/me" : "/login"}
@@ -28,19 +27,19 @@ export default async function Home({
         </Link>
       </nav>
 
-      <header className="mb-10">
-        <h1 className="font-heading text-4xl font-bold leading-[1.05] tracking-tight">
+      <header className="mb-12 max-w-2xl lg:mb-16">
+        <h1 className="font-heading text-4xl font-bold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
           Speed dating that only happens{" "}
           <span className="text-gradient-flame">if it tips.</span>
         </h1>
-        <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">
+        <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">
           Anyone can start a night. It runs only if enough people join both sides — and
           your card is only charged if it does. No organiser, no host, no empty bar.
         </p>
       </header>
 
-      <div className="mb-8 flex gap-2">
-        <form className="flex flex-1 gap-2" action="/">
+      <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <form className="flex flex-1 gap-2 sm:max-w-sm" action="/">
           <Input name="city" placeholder="Filter by city" defaultValue={city ?? ""} />
           <Button type="submit" variant="secondary">
             Filter
@@ -52,7 +51,7 @@ export default async function Home({
       </div>
 
       {openEvents.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+        <div className="rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
           <p>No open nights{city ? ` in “${city}”` : ""} right now.</p>
           <p className="mt-2">
             <Link href="/create" className="text-candle underline underline-offset-4">
@@ -62,18 +61,20 @@ export default async function Home({
           </p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {openEvents.map((event) => (
             <li key={event.id}>
               <Link
                 href={`/e/${event.slug}`}
-                className="block rounded-xl border bg-card p-4 transition-colors hover:border-candle/40"
+                className="flex h-full flex-col rounded-xl border bg-card p-5 transition-colors hover:border-candle/40"
               >
-                <div className="font-heading text-lg font-semibold">{event.title}</div>
-                <div className={cn("mt-1 text-sm text-muted-foreground")}>
+                <div className="font-heading text-lg font-semibold leading-snug">
+                  {event.title}
+                </div>
+                <div className="mt-1 text-sm text-muted-foreground">
                   {event.city} · {event.venueName}
                 </div>
-                <div className="mt-2 text-sm font-medium text-candle">
+                <div className="mt-auto pt-3 text-sm font-medium text-candle">
                   {event.startsAt.toLocaleString(undefined, {
                     weekday: "short",
                     day: "numeric",
@@ -88,14 +89,27 @@ export default async function Home({
         </ul>
       )}
 
-      <footer className="mt-14 border-t pt-6 text-xs leading-relaxed text-muted-foreground">
-        <p>
-          <span className="font-medium text-foreground">How it works:</span> pick a side
-          and save your card — you&apos;re charged nothing. If both sides fill by the
-          deadline, the night tips: everyone&apos;s charged, everyone shows. On the night
-          your phone shows who you&apos;re meeting each round. Mutual yeses land in your
-          inbox the next morning.
-        </p>
+      <footer className="mt-16 grid gap-6 border-t pt-8 text-sm leading-relaxed text-muted-foreground sm:grid-cols-3">
+        <div>
+          <p className="font-heading font-semibold text-foreground">1 · Pick a side</p>
+          <p className="mt-1">
+            Join with a name, a photo, and a saved card. You&apos;re charged nothing yet.
+          </p>
+        </div>
+        <div>
+          <p className="font-heading font-semibold text-foreground">2 · It tips or it doesn&apos;t</p>
+          <p className="mt-1">
+            If both sides fill by the deadline, everyone&apos;s charged and it&apos;s on. If not,
+            it fizzles and nobody pays.
+          </p>
+        </div>
+        <div>
+          <p className="font-heading font-semibold text-foreground">3 · Your phone runs the night</p>
+          <p className="mt-1">
+            Each round shows who you&apos;re meeting. Mutual yeses land in your inbox the
+            next morning.
+          </p>
+        </div>
       </footer>
     </main>
   );

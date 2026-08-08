@@ -36,7 +36,7 @@ export default async function MePage() {
     .orderBy(desc(events.startsAt));
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-8">
+    <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Your profile</h1>
         <form action="/api/auth/logout" method="post">
@@ -45,9 +45,11 @@ export default async function MePage() {
           </Button>
         </form>
       </div>
+      <div className="md:grid md:grid-cols-[minmax(0,20rem)_1fr] md:gap-12">
       <ProfileForm initialName={user.name ?? ""} initialPhotoUrl={user.photoUrl} />
 
-      <h2 className="mb-3 mt-10 text-lg font-semibold">Your events</h2>
+      <div>
+      <h2 className="mb-3 mt-10 text-lg font-semibold md:mt-0">Your events</h2>
       {myRegs.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Nothing yet.{" "}
@@ -91,6 +93,8 @@ export default async function MePage() {
           ))}
         </ul>
       )}
+      </div>
+      </div>
     </main>
   );
 }

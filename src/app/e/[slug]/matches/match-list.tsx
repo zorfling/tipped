@@ -12,7 +12,7 @@ interface Partner {
 
 export function MatchList({ slug, partners }: { slug: string; partners: Partner[] }) {
   return (
-    <ul className="mt-6 flex flex-col gap-4">
+    <ul className="mt-6 grid gap-4 sm:grid-cols-2">
       {partners.map((p) => (
         <MatchCard key={p.registrationId} slug={slug} partner={p} />
       ))}

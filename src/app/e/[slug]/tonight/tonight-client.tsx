@@ -37,7 +37,7 @@ function PartnerCard({
       <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
         {headline}
       </p>
-      <div className="glow-candle mt-5 size-60 overflow-hidden rounded-3xl bg-muted">
+      <div className="glow-candle mt-5 size-60 overflow-hidden rounded-3xl bg-muted md:size-72">
         {partner.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

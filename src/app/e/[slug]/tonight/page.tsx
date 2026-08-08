@@ -17,7 +17,7 @@ export default async function TonightPage({
   if (!event) notFound();
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 py-6">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 py-6 md:max-w-lg md:py-10">
       <header className="mb-4">
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-candle">Tonight</p>
         <h1 className="mt-1 text-xl font-bold">{event.title}</h1>

@@ -52,7 +52,7 @@ export default async function JoinPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-8">
+    <main className="mx-auto w-full max-w-md px-4 py-8 md:max-w-lg md:py-12">
       <h1 className="text-2xl font-semibold">Join {event.title}</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         {bucket.label} · ${(bucket.priceCents / 100).toFixed(0)} — only charged if it goes
