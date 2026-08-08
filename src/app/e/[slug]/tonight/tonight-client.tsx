@@ -235,12 +235,22 @@ export function TonightClient({ slug }: { slug: string }) {
   }
 
   if (state.phase === "checkin" || state.phase === "awaiting_schedule") {
+    // The schedule generates 10 min after starts_at (late-arrival grace).
+    const nightStartsMs = new Date(state.startsAt).getTime() + 10 * 60 * 1000;
     return (
       <div className="flex flex-1 flex-col items-center justify-center text-center">
         <p className="text-2xl font-semibold">You&apos;re checked in ✓</p>
-        <p className="mt-3 text-muted-foreground">
-          Grab a drink — the schedule appears here the moment the night begins. No host,
-          no announcements: this screen is the host.
+        {nightStartsMs > nowMs ? (
+          <p className="mt-6 font-heading text-5xl font-bold tabular-nums text-candle">
+            {mmss(new Date(nightStartsMs).toISOString(), nowMs)}
+          </p>
+        ) : (
+          <p className="mt-6 font-heading text-2xl font-bold text-candle">Any moment now…</p>
+        )}
+        <p className="mt-2 text-sm text-muted-foreground">until the first round</p>
+        <p className="mt-5 text-muted-foreground">
+          Grab a drink — your first date&apos;s photo appears here the moment the night
+          begins. No host, no announcements: this screen is the host.
         </p>
       </div>
     );
