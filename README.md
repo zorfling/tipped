@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tipped
 
-## Getting Started
+Self-organising speed dating. **No organiser, no host — the app runs the show.**
 
-First, run the development server:
+- **Composition-gated tickets**: each side of an event needs 6–12 people, roughly balanced, or the night doesn't happen.
+- **Tip-or-refund**: your card is saved when you join, but only charged if the event *tips* at the deadline. Fizzled events charge nobody, ever.
+- **App-run night**: check in on your phone; every round it shows the name + photo of the person you're meeting. No table numbers, no MC.
+- **Morning-after reveal**: mutual yeses only. One-sided picks are never revealed to anyone, and picks are purged 30 days after the event.
+
+## Stack
+
+Next.js (App Router, TS strict) · Drizzle + Neon Postgres · Stripe (test mode) · Resend · Netlify (+ Blobs, Scheduled Functions) · Tailwind + shadcn/ui · Vitest.
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # fill in values (see below)
+npm run db:push              # push schema to your Neon database
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local`:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Var | Notes |
+| --- | --- |
+| `DATABASE_URL` | Neon Postgres connection string |
+| `STRIPE_SECRET_KEY` / `STRIPE_PUBLISHABLE_KEY` / `STRIPE_WEBHOOK_SECRET` | Optional locally. **Without them the app runs in keyless dev mode**: the card step is skipped and charges are simulated. |
+| `RESEND_API_KEY` | Optional locally — without it every email (including magic sign-in links) is printed to the server console. |
+| `APP_URL` | e.g. `http://localhost:3000` |
+| `CRON_SECRET` | Guards `/api/cron/tipper` |
+| `AUTH_SECRET` | ≥32 random bytes; signs magic-link + session tokens |
+| `ADMIN_EMAIL` | Receives safety reports |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The tipper cron runs every 10 minutes in production (Netlify scheduled function). Locally, poke it by hand:
 
-## Learn More
+```bash
+curl -X POST "http://localhost:3000/api/cron/tipper?secret=$CRON_SECRET"
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Tests
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm test
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Pure engines (`lib/composition`, `lib/rotation`, `lib/roundState`) have exhaustive unit + property tests. The `*.integration.test.ts` files run against the real `DATABASE_URL` (skipped when unset) and cover the plan's acceptance criteria end to end, including the concurrency race, exactly-once charging, and the simulated night with an injected clock.
 
-## Deploy on Vercel
+## Running against real Stripe
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Set the three Stripe vars to test-mode keys, then:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. `stripe listen --forward-to localhost:3000/api/stripe/webhook` (gives you `STRIPE_WEBHOOK_SECRET`).
+2. Join an event with card `4242 4242 4242 4242`, or `4000 0025 0000 3155` to exercise `authentication_required` and the fix-payment flow.
+3. Use Stripe test clocks to fast-forward a customer past a deadline if you want the true off-session path.
+
+## Out of scope (deliberately — see the plan)
+
+Stripe Connect or payouts of any kind (the platform is the merchant; ticket revenue is platform revenue); native apps; trivia format; single-pool mode; algorithmic per-round matching (MVP is round-robin); geofenced check-in; refund automation (incl. night-of auto-cancel — charges stand); SMS; promo codes; photo moderation automation (**photos are unmoderated — known risk, manual for now**); i18n; admin panel beyond the report-inbox email.
+
+Plan: `docs/tipped-mvp-plan.md` · Autonomous-session decisions: `DECISIONS.md`.

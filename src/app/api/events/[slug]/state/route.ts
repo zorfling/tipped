@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUserId } from "@/lib/auth";
 import { getEventBySlug } from "@/lib/events";
+import { ensureClosed } from "@/lib/matching";
 import { getNightState } from "@/lib/nightState";
 import { CHECKIN_GRACE_AFTER_MS, generateScheduleForEvent } from "@/lib/schedule";
 
@@ -26,6 +27,9 @@ export async function GET(
     if (refreshed) Object.assign(event, refreshed);
   }
 
-  const state = await getNightState(event, userId, now);
+  // Lazy auto-close: first poll past final round + 15 min computes matches.
+  const settled = event.status === "live" ? await ensureClosed(event, now) : event;
+
+  const state = await getNightState(settled, userId, now);
   return NextResponse.json(state, { headers: { "Cache-Control": "no-store" } });
 }

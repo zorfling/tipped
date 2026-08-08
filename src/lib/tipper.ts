@@ -197,6 +197,11 @@ export async function runTipper(now = new Date()): Promise<TipperResult> {
   const { generateDueSchedules } = await import("@/lib/schedule");
   result.nightSchedulesGenerated = await generateDueSchedules(now);
 
+  const { closeDueEvents, revealDueMatches, purgeOldPicks } = await import("@/lib/matching");
+  await closeDueEvents(now);
+  await revealDueMatches(now);
+  await purgeOldPicks(now);
+
   return result;
 }
 

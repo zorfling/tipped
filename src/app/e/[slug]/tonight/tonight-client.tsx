@@ -57,6 +57,104 @@ function PartnerCard({
   );
 }
 
+function PickButtons({
+  slug,
+  partner,
+  onPicked,
+  compact,
+}: {
+  slug: string;
+  partner: { registrationId: string; name: string | null; myChoice: "yes" | "no" | null };
+  onPicked: () => void;
+  compact?: boolean;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  async function pick(choice: "yes" | "no") {
+    setBusy(true);
+    await fetch(`/api/events/${slug}/picks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ toRegistrationId: partner.registrationId, choice }),
+    });
+    setBusy(false);
+    onPicked();
+  }
+
+  return (
+    <div className={compact ? "flex items-center gap-2" : "mt-2 flex items-center justify-center gap-3"}>
+      <Button
+        size="sm"
+        variant={partner.myChoice === "yes" ? "default" : "outline"}
+        disabled={busy}
+        onClick={() => pick("yes")}
+      >
+        👍 Yes
+      </Button>
+      <Button
+        size="sm"
+        variant={partner.myChoice === "no" ? "default" : "outline"}
+        disabled={busy}
+        onClick={() => pick("no")}
+      >
+        👎 No
+      </Button>
+    </div>
+  );
+}
+
+function ReportLink({
+  slug,
+  registrationId,
+}: {
+  slug: string;
+  registrationId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [body, setBody] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
+
+  if (state === "sent") {
+    return <p className="mt-3 text-center text-xs text-muted-foreground">Report sent — thank you.</p>;
+  }
+  if (!open) {
+    return (
+      <button
+        className="mt-3 w-full text-center text-xs text-muted-foreground underline"
+        onClick={() => setOpen(true)}
+      >
+        Report a problem with this person
+      </button>
+    );
+  }
+  return (
+    <div className="mt-3 flex flex-col gap-2">
+      <textarea
+        className="min-h-20 rounded-md border bg-background p-2 text-sm"
+        placeholder="What happened? This goes straight to us."
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+      />
+      <Button
+        size="sm"
+        variant="destructive"
+        disabled={!body.trim() || state === "sending"}
+        onClick={async () => {
+          setState("sending");
+          await fetch(`/api/events/${slug}/report`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reportedRegistrationId: registrationId, body }),
+          });
+          setState("sent");
+        }}
+      >
+        Send report
+      </Button>
+    </div>
+  );
+}
+
 export function TonightClient({ slug }: { slug: string }) {
   const [state, setState] = useState<NightStatePayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -148,22 +246,38 @@ export function TonightClient({ slug }: { slug: string }) {
 
   if (state.phase === "before_first_round" || state.phase === "break") {
     if (!state.nextRound) return null;
+    const justMet = state.pastPartners?.at(-1);
+    const pickPrompt = justMet && (
+      <div className="mt-auto rounded-lg border bg-muted/40 p-3">
+        <p className="text-center text-sm font-medium">How was {justMet.name}?</p>
+        <PickButtons slug={slug} partner={justMet} onPicked={load} />
+        <p className="mt-1 text-center text-[11px] text-muted-foreground">
+          Private — only mutual yeses are ever revealed.
+        </p>
+      </div>
+    );
     if (!state.nextPartner) {
       return (
-        <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <p className="text-xl font-semibold">Sit this one out 🍹</p>
-          <p className="mt-2 text-muted-foreground">
-            You&apos;re on a break for round {state.nextRound.number}. Back after that.
-          </p>
+        <div className="flex flex-1 flex-col">
+          <div className="flex flex-1 flex-col items-center justify-center text-center">
+            <p className="text-xl font-semibold">Sit this one out 🍹</p>
+            <p className="mt-2 text-muted-foreground">
+              You&apos;re on a break for round {state.nextRound.number}. Back after that.
+            </p>
+          </div>
+          {pickPrompt}
         </div>
       );
     }
     return (
-      <PartnerCard
-        partner={state.nextPartner}
-        headline={`Next: round ${state.nextRound.number} — starts in ${mmss(state.nextRound.startsAt, nowMs)}`}
-        sub="Reposition now so you can find each other."
-      />
+      <div className="flex flex-1 flex-col">
+        <PartnerCard
+          partner={state.nextPartner}
+          headline={`Next: round ${state.nextRound.number} — starts in ${mmss(state.nextRound.startsAt, nowMs)}`}
+          sub="Reposition now so you can find each other."
+        />
+        {pickPrompt}
+      </div>
     );
   }
 
@@ -188,17 +302,42 @@ export function TonightClient({ slug }: { slug: string }) {
           Round {state.round.number} of {state.totalRounds} · {mmss(state.round.endsAt, nowMs)} left
         </div>
         <PartnerCard partner={state.partner} headline="Find each other" sub="This is your date for the round." />
+        {state.partnerRegistrationId && (
+          <ReportLink slug={slug} registrationId={state.partnerRegistrationId} />
+        )}
       </div>
     );
   }
 
+  // ended
   return (
-    <div className="flex flex-1 flex-col items-center justify-center text-center">
-      <p className="text-2xl font-semibold">That&apos;s a wrap 🎉</p>
-      <p className="mt-3 text-muted-foreground">
-        Thanks for playing. Watch your inbox tomorrow morning — mutual matches get
-        revealed then.
-      </p>
+    <div className="flex flex-1 flex-col">
+      <div className="text-center">
+        <p className="text-2xl font-semibold">That&apos;s a wrap 🎉</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Lock in your picks below — they close 15 minutes after the last round. Mutual
+          matches land in your inbox tomorrow morning. Nobody ever sees a one-sided yes.
+        </p>
+      </div>
+      {state.pastPartners && state.pastPartners.length > 0 && (
+        <ul className="mt-6 flex flex-col gap-3">
+          {state.pastPartners.map((p) => (
+            <li key={p.registrationId} className="flex items-center gap-3 rounded-lg border p-3">
+              <div className="size-12 shrink-0 overflow-hidden rounded-full border bg-muted">
+                {p.photoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.photoUrl} alt="" className="size-full object-cover" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">{p.name}</p>
+                <p className="text-xs text-muted-foreground">Round {p.roundNumber}</p>
+              </div>
+              <PickButtons slug={slug} partner={p} onPicked={load} compact />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

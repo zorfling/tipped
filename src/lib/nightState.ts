@@ -1,11 +1,19 @@
-import { and, asc, eq, or } from "drizzle-orm";
-import { db, assignments, registrations, rounds, users, type Event } from "@/db";
+import { and, asc, eq, inArray, or } from "drizzle-orm";
+import { db, assignments, picks, registrations, rounds, users, type Event } from "@/db";
 import { deriveNightState, type RoundRow } from "@/lib/roundState";
 import { CHECKIN_GRACE_AFTER_MS, CHECKIN_OPENS_BEFORE_MS } from "@/lib/schedule";
 
 export interface PartnerInfo {
   name: string | null;
   photoUrl: string | null;
+}
+
+export interface PastPartner {
+  registrationId: string;
+  name: string | null;
+  photoUrl: string | null;
+  roundNumber: number;
+  myChoice: "yes" | "no" | null;
 }
 
 export interface NightStatePayload {
@@ -32,6 +40,8 @@ export interface NightStatePayload {
   nextPartner?: PartnerInfo | null;
   myRegistrationId?: string;
   partnerRegistrationId?: string;
+  /** Rounds already finished: who you met, with your current pick. */
+  pastPartners?: PastPartner[];
 }
 
 async function partnerFor(
@@ -106,6 +116,58 @@ export async function getNightState(
     { startsAt: event.startsAt },
     roundRows.map(asRoundRow),
   );
+
+  // Finished rounds → past partners with my current pick (editable until close)
+  const finishedRounds = roundRows.filter((r) => r.scheduledEndAt.getTime() <= now.getTime());
+  if (finishedRounds.length > 0) {
+    const roundNumberById = new Map(finishedRounds.map((r) => [r.id, r.number]));
+    const myAssignments = await db
+      .select()
+      .from(assignments)
+      .where(
+        and(
+          inArray(assignments.roundId, finishedRounds.map((r) => r.id)),
+          or(eq(assignments.registrationAId, myReg.id), eq(assignments.registrationBId, myReg.id)),
+        ),
+      );
+    const partnerRegIds = myAssignments
+      .map((a) => (a.registrationAId === myReg.id ? a.registrationBId : a.registrationAId))
+      .filter((id): id is string => id !== null);
+    if (partnerRegIds.length > 0) {
+      const partnerRows = await db
+        .select({
+          regId: registrations.id,
+          name: users.name,
+          photoUrl: users.photoUrl,
+        })
+        .from(registrations)
+        .innerJoin(users, eq(registrations.userId, users.id))
+        .where(inArray(registrations.id, partnerRegIds));
+      const infoByReg = new Map(partnerRows.map((r) => [r.regId, r]));
+      const myPicks = await db
+        .select()
+        .from(picks)
+        .where(eq(picks.fromRegistrationId, myReg.id));
+      const choiceByReg = new Map(myPicks.map((p) => [p.toRegistrationId, p.choice]));
+
+      base.pastPartners = myAssignments
+        .filter((a) => (a.registrationAId === myReg.id ? a.registrationBId : a.registrationAId))
+        .map((a) => {
+          const partnerId = (a.registrationAId === myReg.id
+            ? a.registrationBId
+            : a.registrationAId)!;
+          const info = infoByReg.get(partnerId);
+          return {
+            registrationId: partnerId,
+            name: info?.name ?? null,
+            photoUrl: info?.photoUrl ?? null,
+            roundNumber: roundNumberById.get(a.roundId) ?? 0,
+            myChoice: choiceByReg.get(partnerId) ?? null,
+          };
+        })
+        .sort((a, b) => a.roundNumber - b.roundNumber);
+    }
+  }
 
   const opens = event.startsAt.getTime() - CHECKIN_OPENS_BEFORE_MS;
   if (!base.checkedIn && myReg.state === "confirmed" && now.getTime() >= opens) {

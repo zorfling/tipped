@@ -43,3 +43,25 @@ Decisions made autonomously while the user was AFK. Newest last.
 10. **Dev mode without Stripe keys**: join flow skips the card step entirely
     (`mode:"dev"`), and charges are simulated with `dev_pi_*` ids so the whole lifecycle
     is demoable locally. Real mode requires keys and is the production path.
+11. **Currency**: hardcoded `aud` (you're in Brisbane). Change in `src/lib/payments.ts`.
+12. **`locked` status unused**: the enum exists per the plan but nothing sets it —
+    events go tipped → live directly; pre-night phases are derived from timestamps.
+13. **Schedule generation trigger**: the 10-min cron *and* a lazy trigger on the first
+    `/state` poll past `starts_at + 10min` (idempotent under the event lock), so the
+    night starts punctually whenever any guest's phone is polling, regardless of cron
+    jitter.
+14. **Reveal timing**: "9am local" is implemented with a fixed UTC+10 (Brisbane) offset
+    constant in `src/lib/matching.ts` — events have no timezone column in the MVP.
+15. **Picks close** when the event flips to `matched` (final round end + 15 min, via
+    cron or lazy close). Editable any time before that, including between rounds.
+16. **Matches page** (`/e/[slug]/matches`) only shows matches after the morning reveal
+    has run — the email is the reveal moment; the page never front-runs it.
+17. **Fix-payment approach**: rather than on-session 3DS confirmation of the stuck
+    PaymentIntent, the fix link always collects a fresh card via on-session SetupIntent
+    (SCA happens there), cancels/fails the stale intent, and retries off-session with a
+    `tip-{reg}-retry-{n}` idempotency key. Simpler and covers both declines and
+    requires_action.
+18. **Testing against real Stripe test mode was not possible in this session** (no API
+    keys available) — the Stripe layer is exercised through a mocked gateway in the
+    integration tests. The README documents the manual test-mode runbook (test cards,
+    `stripe listen`, test clocks) for when you add keys.
