@@ -27,7 +27,10 @@ export default async function EventPage({
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-8">
-      <h1 className="text-2xl font-semibold">{event.title}</h1>
+      <p className="mb-3 text-xs font-medium uppercase tracking-[0.18em] text-candle">
+        {event.city}
+      </p>
+      <h1 className="text-3xl font-bold">{event.title}</h1>
       <div className="mt-2 space-y-1 text-sm text-muted-foreground">
         <p>{when}</p>
         <p>
@@ -45,8 +48,8 @@ export default async function EventPage({
 
       <EventLive slug={slug} />
 
-      <div className="mt-8 rounded-lg border bg-muted/30 p-4 text-xs leading-relaxed text-muted-foreground">
-        <p className="font-medium text-foreground">How Tipped works</p>
+      <div className="mt-8 rounded-xl border bg-card p-4 text-xs leading-relaxed text-muted-foreground">
+        <p className="font-heading text-sm font-semibold text-foreground">How Tipped works</p>
         <p className="mt-1">
           This night only happens if both sides fill to their minimum, roughly balanced, by
           the deadline. Your card is saved when you join but{" "}

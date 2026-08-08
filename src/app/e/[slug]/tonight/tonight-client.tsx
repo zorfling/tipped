@@ -37,7 +37,7 @@ function PartnerCard({
       <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
         {headline}
       </p>
-      <div className="mt-4 size-56 overflow-hidden rounded-2xl border bg-muted shadow-md">
+      <div className="glow-candle mt-5 size-60 overflow-hidden rounded-3xl bg-muted">
         {partner.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -51,7 +51,7 @@ function PartnerCard({
           </div>
         )}
       </div>
-      <p className="mt-4 text-3xl font-bold">{partner.name}</p>
+      <p className="mt-5 font-heading text-4xl font-bold">{partner.name}</p>
       <p className="mt-2 text-muted-foreground">{sub}</p>
     </div>
   );
@@ -298,8 +298,12 @@ export function TonightClient({ slug }: { slug: string }) {
     }
     return (
       <div className="flex flex-1 flex-col">
-        <div className="rounded-lg bg-primary px-4 py-2 text-center text-sm font-semibold text-primary-foreground">
-          Round {state.round.number} of {state.totalRounds} · {mmss(state.round.endsAt, nowMs)} left
+        <div
+          className="rounded-xl px-4 py-2.5 text-center text-sm font-semibold text-primary-foreground"
+          style={{ background: "linear-gradient(100deg, var(--candle), var(--flame))" }}
+        >
+          Round {state.round.number} of {state.totalRounds} ·{" "}
+          <span className="tabular-nums">{mmss(state.round.endsAt, nowMs)}</span> left
         </div>
         <PartnerCard partner={state.partner} headline="Find each other" sub="This is your date for the round." />
         {state.partnerRegistrationId && (

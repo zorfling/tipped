@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { SeatMeter } from "@/components/seat-meter";
 import { cn } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
 import type { TallyResponse } from "@/app/api/events/[slug]/tally/route";
 
 const POLL_MS = 10_000;
@@ -53,35 +53,48 @@ export function EventLive({ slug }: { slug: string }) {
   const countdown = useCountdown(tally?.tipDeadlineAt ?? null);
 
   if (!tally) {
-    return <div className="mt-6 h-40 animate-pulse rounded-lg border bg-muted/40" />;
+    return <div className="mt-6 h-40 animate-pulse rounded-xl border bg-card" />;
   }
 
   const statusBanner: Record<string, string> = {
-    tipped: "It's on! This event tipped — see you there.",
-    locked: "It's on! This event tipped — see you there.",
+    tipped: "It's on! This night tipped — see you there.",
+    locked: "It's on! This night tipped — see you there.",
     fizzled: "This one fizzled — not enough people by the deadline. Nobody was charged.",
-    cancelled: "This event was cancelled. Nobody was charged.",
+    cancelled: "This night was cancelled. Nobody was charged.",
     live: "Happening right now.",
-    matched: "This event has wrapped up.",
+    matched: "This night has wrapped up.",
   };
+
+  const bothTipped = tally.buckets.every((b) => b.activeCount >= b.minSize);
 
   return (
     <div className="mt-6">
       {tally.status === "open" && countdown && (
-        <p className="mb-4 text-sm">
-          <span className="font-semibold">{countdown}</span>{" "}
-          <span className="text-muted-foreground">until the tip deadline</span>
-        </p>
+        <div
+          className={cn(
+            "mb-5 rounded-xl border px-4 py-3",
+            bothTipped ? "border-candle/40 bg-accent/10" : "bg-card",
+          )}
+        >
+          <p className="text-sm">
+            <span className="font-heading text-lg font-bold tabular-nums text-candle">
+              {countdown}
+            </span>{" "}
+            <span className="text-muted-foreground">
+              {bothTipped ? "left — it's tipping. Stay in and it's on." : "to tip this night"}
+            </span>
+          </p>
+        </div>
       )}
       {tally.status !== "open" && (
-        <p className="mb-4 rounded-md bg-muted p-3 text-sm font-medium">
+        <p className="mb-5 rounded-xl border border-candle/30 bg-accent/10 p-3 text-sm font-medium">
           {statusBanner[tally.status] ?? tally.status}
         </p>
       )}
       {["tipped", "locked", "live"].includes(tally.status) && (
         <Link
           href={`/e/${slug}/tonight`}
-          className={cn(buttonVariants({ size: "lg" }), "mb-4 w-full")}
+          className={cn(buttonVariants({ size: "lg" }), "mb-5 w-full")}
         >
           Open your night screen →
         </Link>
@@ -90,26 +103,30 @@ export function EventLive({ slug }: { slug: string }) {
       <div className="flex flex-col gap-4">
         {tally.buckets.map((bucket) => {
           const needed = Math.max(bucket.minSize - bucket.activeCount, 0);
-          const pct = Math.min((bucket.activeCount / bucket.minSize) * 100, 100);
           return (
-            <div key={bucket.id} className="rounded-lg border p-4">
+            <div key={bucket.id} className="rounded-xl border bg-card p-4">
               <div className="flex items-baseline justify-between">
-                <span className="font-medium">{bucket.label}</span>
-                <span className="text-sm text-muted-foreground">
+                <span className="font-heading text-lg font-semibold">{bucket.label}</span>
+                <span className="text-sm tabular-nums text-muted-foreground">
                   ${(bucket.priceCents / 100).toFixed(0)}
                 </span>
               </div>
-              <Progress className="mt-3" value={pct} />
-              <p className="mt-2 text-sm text-muted-foreground">
+              <SeatMeter
+                className="mt-3"
+                active={bucket.activeCount}
+                min={bucket.minSize}
+                max={bucket.maxSize}
+              />
+              <p className="mt-2.5 text-sm text-muted-foreground">
                 {needed > 0 ? (
                   <>
-                    <span className="font-medium text-foreground">{bucket.activeCount}</span> of{" "}
-                    {bucket.minSize} needed
+                    <span className="font-semibold text-foreground">{bucket.activeCount}</span> in ·{" "}
+                    <span className="font-semibold text-candle">{needed} more</span> to tip
                     {bucket.waitlistCount > 0 && ` · ${bucket.waitlistCount} waitlisted`}
                   </>
                 ) : (
                   <>
-                    {bucket.activeCount} in — minimum met!
+                    {bucket.activeCount} in — this side is ready
                     {bucket.waitlistCount > 0 && ` · ${bucket.waitlistCount} waitlisted`}
                   </>
                 )}
@@ -136,7 +153,7 @@ export function EventLive({ slug }: { slug: string }) {
                   >
                     {bucket.cta === "join"
                       ? `Join ${bucket.label}`
-                      : `Join waitlist (the other side is ahead)`}
+                      : "Join waitlist — this side is ahead"}
                   </Link>
                 ))}
             </div>

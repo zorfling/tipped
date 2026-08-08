@@ -9,7 +9,9 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-display);
+  --color-candle: var(--candle);
+  --color-flame: var(--flame);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,73 +50,51 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Tipped palette — a wine bar after dark.
+ * cellar   #191014  deep wine-black, the room
+ * velvet   #251820  card surfaces
+ * plum     #33222c  raised surfaces / secondary
+ * chalk    #f6ece4  warm off-white text
+ * smoke    #a5929c  muted text
+ * candle   #ffb454  amber — warmth, "filling up"
+ * flame    #ff6b4a  coral — action, "it's on"
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #191014;
+  --foreground: #f6ece4;
+  --card: #251820;
+  --card-foreground: #f6ece4;
+  --popover: #251820;
+  --popover-foreground: #f6ece4;
+  --primary: #ff6b4a;
+  --primary-foreground: #24100b;
+  --secondary: #33222c;
+  --secondary-foreground: #f6ece4;
+  --muted: #251820;
+  --muted-foreground: #a5929c;
+  --accent: #ffb454;
+  --accent-foreground: #2b1a07;
+  --destructive: #ff5c6e;
+  --border: rgba(255, 214, 196, 0.14);
+  --input: rgba(255, 214, 196, 0.18);
+  --ring: #ffb454;
+  --candle: #ffb454;
+  --flame: #ff6b4a;
+  --chart-1: #ffb454;
+  --chart-2: #ff6b4a;
+  --chart-3: #a5929c;
+  --chart-4: #33222c;
+  --chart-5: #251820;
+  --radius: 0.9rem;
+  --sidebar: #251820;
+  --sidebar-foreground: #f6ece4;
+  --sidebar-primary: #ff6b4a;
+  --sidebar-primary-foreground: #24100b;
+  --sidebar-accent: #33222c;
+  --sidebar-accent-foreground: #f6ece4;
+  --sidebar-border: rgba(255, 214, 196, 0.14);
+  --sidebar-ring: #ffb454;
 }
 
 @layer base {
@@ -123,8 +103,65 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(
+      60rem 40rem at 50% -10rem,
+      rgba(255, 180, 84, 0.07),
+      transparent 60%
+    );
   }
   html {
     @apply font-sans;
+  }
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+  ::selection {
+    background: rgba(255, 180, 84, 0.35);
+  }
+}
+
+@layer utilities {
+  /* The tipped-over p in the wordmark */
+  .tipped-letter {
+    display: inline-block;
+    transform: rotate(16deg) translateY(0.05em);
+    transform-origin: 55% 85%;
+    color: var(--flame);
+  }
+
+  /* Candle-glow ring for the pairing photo card */
+  .glow-candle {
+    box-shadow:
+      0 0 0 1px rgba(255, 180, 84, 0.35),
+      0 0 24px rgba(255, 180, 84, 0.22),
+      0 0 80px rgba(255, 107, 74, 0.18);
+  }
+
+  .text-gradient-flame {
+    background: linear-gradient(100deg, var(--candle), var(--flame));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* One warm pulse when a seat fills */
+@keyframes seat-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 180, 84, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 12px 4px rgba(255, 180, 84, 0);
+  }
+}
+.seat-filled {
+  background: linear-gradient(120deg, var(--candle), var(--flame));
+  animation: seat-glow 900ms ease-out 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .seat-filled {
+    animation: none;
   }
 }

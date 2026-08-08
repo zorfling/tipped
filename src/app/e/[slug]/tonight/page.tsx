@@ -19,7 +19,8 @@ export default async function TonightPage({
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 py-6">
       <header className="mb-4">
-        <h1 className="text-lg font-semibold">{event.title}</h1>
+        <p className="text-xs font-medium uppercase tracking-[0.18em] text-candle">Tonight</p>
+        <h1 className="mt-1 text-xl font-bold">{event.title}</h1>
         <p className="text-sm text-muted-foreground">
           {event.venueName}
           {event.venueNotes ? ` — ${event.venueNotes}` : ""}
