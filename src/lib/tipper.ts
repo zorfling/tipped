@@ -24,6 +24,7 @@ export interface TipperResult {
   chargesSucceeded: number;
   chargesFailed: number;
   remindersSent: number;
+  nightSchedulesGenerated: string[];
 }
 
 async function lockEvent(tx: Tx, eventId: string): Promise<void> {
@@ -159,6 +160,7 @@ export async function runTipper(now = new Date()): Promise<TipperResult> {
     chargesSucceeded: 0,
     chargesFailed: 0,
     remindersSent: 0,
+    nightSchedulesGenerated: [],
   };
 
   const due = await db
@@ -191,6 +193,10 @@ export async function runTipper(now = new Date()): Promise<TipperResult> {
   }
 
   result.remindersSent = await sendDayBeforeReminders(now);
+
+  const { generateDueSchedules } = await import("@/lib/schedule");
+  result.nightSchedulesGenerated = await generateDueSchedules(now);
+
   return result;
 }
 

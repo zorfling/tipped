@@ -78,6 +78,14 @@ export function EventLive({ slug }: { slug: string }) {
           {statusBanner[tally.status] ?? tally.status}
         </p>
       )}
+      {["tipped", "locked", "live"].includes(tally.status) && (
+        <Link
+          href={`/e/${slug}/tonight`}
+          className={cn(buttonVariants({ size: "lg" }), "mb-4 w-full")}
+        >
+          Open your night screen →
+        </Link>
+      )}
 
       <div className="flex flex-col gap-4">
         {tally.buckets.map((bucket) => {
