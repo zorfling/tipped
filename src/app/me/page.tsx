@@ -1,0 +1,89 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { desc, eq } from "drizzle-orm";
+import { db, events, registrations, buckets } from "@/db";
+import { getSessionUser } from "@/lib/auth";
+import { ProfileForm } from "@/components/profile-form";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+const stateLabels: Record<string, string> = {
+  reserved: "Reserved — charged only if it tips",
+  waitlisted: "Waitlisted",
+  confirmed: "Confirmed",
+  released: "Released (event fizzled)",
+  refunded: "Refunded",
+  cancelled: "Cancelled",
+  checked_in: "Checked in",
+  no_show: "No-show",
+};
+
+export default async function MePage() {
+  const user = await getSessionUser();
+  if (!user) redirect("/login?next=/me");
+
+  const myRegs = await db
+    .select({
+      registration: registrations,
+      event: events,
+      bucket: buckets,
+    })
+    .from(registrations)
+    .innerJoin(events, eq(registrations.eventId, events.id))
+    .innerJoin(buckets, eq(registrations.bucketId, buckets.id))
+    .where(eq(registrations.userId, user.id))
+    .orderBy(desc(events.startsAt));
+
+  return (
+    <main className="mx-auto w-full max-w-md px-4 py-8">
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Your profile</h1>
+        <form action="/api/auth/logout" method="post">
+          <Button variant="ghost" size="sm" type="submit">
+            Sign out
+          </Button>
+        </form>
+      </div>
+      <ProfileForm initialName={user.name ?? ""} initialPhotoUrl={user.photoUrl} />
+
+      <h2 className="mb-3 mt-10 text-lg font-semibold">Your events</h2>
+      {myRegs.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Nothing yet.{" "}
+          <Link className="underline" href="/">
+            Find an event
+          </Link>{" "}
+          or{" "}
+          <Link className="underline" href="/create">
+            create one
+          </Link>
+          .
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {myRegs.map(({ registration, event, bucket }) => (
+            <li key={registration.id} className="rounded-lg border p-3">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <Link href={`/e/${event.slug}`} className="font-medium underline-offset-2 hover:underline">
+                    {event.title}
+                  </Link>
+                  <p className="text-sm text-muted-foreground">
+                    {event.city} ·{" "}
+                    {event.startsAt.toLocaleDateString(undefined, {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                    })}{" "}
+                    · {bucket.label}
+                  </p>
+                </div>
+                <Badge variant="secondary">{stateLabels[registration.state] ?? registration.state}</Badge>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </main>
+  );
+}
