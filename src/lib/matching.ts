@@ -135,10 +135,12 @@ export async function revealDueMatches(now = new Date()): Promise<number> {
       const me = byReg.get(regId);
       if (!me) continue;
       const list = theirMatches
-        .map(
-          (m) =>
-            `<div style="margin:12px 0"><img src="${process.env.APP_URL}${m.photoUrl}" width="96" height="96" style="border-radius:12px;object-fit:cover" alt="" /><br><strong>${m.name}</strong> — <a href="mailto:${m.email}">${m.email}</a></div>`,
-        )
+        .map((m) => {
+          const photo = m.photoUrl?.startsWith("http")
+            ? m.photoUrl
+            : `${process.env.APP_URL}${m.photoUrl}`;
+          return `<div style="margin:12px 0"><img src="${photo}" width="96" height="96" style="border-radius:12px;object-fit:cover" alt="" /><br><strong>${m.name}</strong> — <a href="mailto:${m.email}">${m.email}</a></div>`;
+        })
         .join("");
       const delivered = await sendEventEmail({
         eventId: event.id,

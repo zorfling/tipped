@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import type { NightStatePayload } from "@/lib/nightState";
+import { useNightCues } from "./use-night-cues";
 
 const POLL_MS = 5_000;
 
@@ -160,6 +161,7 @@ export function TonightClient({ slug }: { slug: string }) {
   const [error, setError] = useState<string | null>(null);
   const [checkinBusy, setCheckinBusy] = useState(false);
   const nowMs = useTicker();
+  useNightCues(state);
 
   const load = useCallback(async () => {
     try {
