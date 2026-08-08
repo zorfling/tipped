@@ -2,7 +2,10 @@ import { Resend } from "resend";
 import { and, eq, isNull } from "drizzle-orm";
 import { db, emailLog } from "@/db";
 
-const FROM = "Tipped <hello@tipped.example.com>";
+// onboarding@resend.dev works without domain verification but only delivers
+// to the Resend account owner's inbox — set EMAIL_FROM once your domain is
+// verified in Resend.
+const FROM = process.env.EMAIL_FROM ?? "Tipped <onboarding@resend.dev>";
 
 interface Mail {
   to: string;
