@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth";
 import { ProfileForm } from "@/components/profile-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CancelButton } from "./cancel-button";
 
 const stateLabels: Record<string, string> = {
   reserved: "Reserved — charged only if it tips",
@@ -80,6 +81,12 @@ export default async function MePage() {
                 </div>
                 <Badge variant="secondary">{stateLabels[registration.state] ?? registration.state}</Badge>
               </div>
+              {event.status === "open" &&
+                ["reserved", "waitlisted"].includes(registration.state) && (
+                  <div className="mt-2">
+                    <CancelButton registrationId={registration.id} />
+                  </div>
+                )}
             </li>
           ))}
         </ul>
