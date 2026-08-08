@@ -65,30 +65,31 @@ export default async function MePage() {
       ) : (
         <ul className="flex flex-col gap-3">
           {myRegs.map(({ registration, event, bucket }) => (
-            <li key={registration.id} className="rounded-lg border p-3">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <Link href={`/e/${event.slug}`} className="font-medium underline-offset-2 hover:underline">
-                    {event.title}
-                  </Link>
-                  <p className="text-sm text-muted-foreground">
-                    {event.city} ·{" "}
-                    {event.startsAt.toLocaleDateString(undefined, {
-                      weekday: "short",
-                      day: "numeric",
-                      month: "short",
-                    })}{" "}
-                    · {bucket.label}
-                  </p>
-                </div>
-                <Badge variant="secondary">{stateLabels[registration.state] ?? registration.state}</Badge>
-              </div>
-              {event.status === "open" &&
-                ["reserved", "waitlisted"].includes(registration.state) && (
-                  <div className="mt-2">
+            <li key={registration.id} className="rounded-lg border bg-card p-4">
+              <Link
+                href={`/e/${event.slug}`}
+                className="font-heading text-base font-semibold underline-offset-2 hover:underline"
+              >
+                {event.title}
+              </Link>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                {event.city} ·{" "}
+                {event.startsAt.toLocaleDateString(undefined, {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
+                })}{" "}
+                · {bucket.label}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <Badge variant="secondary">
+                  {stateLabels[registration.state] ?? registration.state}
+                </Badge>
+                {event.status === "open" &&
+                  ["reserved", "waitlisted"].includes(registration.state) && (
                     <CancelButton registrationId={registration.id} />
-                  </div>
-                )}
+                  )}
+              </div>
             </li>
           ))}
         </ul>
