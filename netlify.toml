@@ -4,5 +4,5 @@
 [functions]
   directory = "netlify/functions"
 
-[functions."tipper-cron"]
-  schedule = "*/10 * * * *"
+# [functions."tipper-cron"]
+#   schedule = "*/10 * * * *"
